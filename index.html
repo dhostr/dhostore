@@ -2,31 +2,88 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>DHO STORE - Top Up Termurah</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DHO STORE.id - Top Up Game Termurah</title>
 <style>
-body{margin:0;background:#0a0a0a;color:#fff;font-family:sans-serif}
-.header{padding:20px 24px;font-weight:900;letter-spacing:1px}
-.hero{padding:24px}
-.hero h1{font-size:38px;line-height:0.95;margin:0}
-.hero p{color:#aaa;margin-top:12px}
-.btn{display:block;background:#fff;color:#000;text-align:center;padding:16px;border-radius:12px;font-weight:800;text-decoration:none;margin-top:24px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:24px}
-.card{background:#191919;border-radius:16px;padding:20px;text-align:center;font-weight:700;border:1px solid #2a2a2a}
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,sans-serif}
+body{background:#0a0a0a;color:white;padding:20px}
+.header{max-width:500px;margin:0 auto}
+.logo{font-weight:900;margin-bottom:30px}
+.hero h1{font-size:36px;line-height:0.95;font-weight:900;margin-bottom:10px}
+.hero p{color:#888;font-size:13px;margin-bottom:20px}
+.btn-wa{display:block;background:white;color:black;text-align:center;padding:14px;border-radius:12px;font-weight:800;text-decoration:none;margin-bottom:25px}
+.games{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:25px}
+.game-card{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:14px;padding:18px;text-align:center;cursor:pointer}
+.game-card.active{background:white;color:black;transform:scale(1.02)}
+#orderBox{display:none;background:#141414;border:1px solid #2a2a2a;border-radius:16px;padding:20px}
+#orderBox.show{display:block}
+.label{font-size:12px;color:#888;margin:12px 0 6px;display:block;font-weight:600}
+input,select{width:100%;background:#0a0a0a;border:1px solid #333;color:white;padding:12px;border-radius:10px}
+.products{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.prod{background:#1e1e1e;border:1px solid #333;border-radius:10px;padding:12px;cursor:pointer}
+.prod.active{background:white;color:black}
+.prod.nominal{font-weight:800;font-size:13px}
+.prod.harga{font-size:11px;opacity:.7}
+.btn-order{width:100%;background:#25D366;color:black;border:0;padding:14px;border-radius:12px;font-weight:900;margin-top:18px;cursor:pointer}
 </style>
 </head>
 <body>
-<div class="header">DHO STORE.id</div>
+<div class="header">
+<div class="logo">DHO STORE.id</div>
 <div class="hero">
 <h1>TOP UP GAME<br>PALING MURAH<br>& INSTAN.</h1>
 <p>ML • FF • PUBG • Genshin • Valorant<br>Proses 1 menit, bayar pakai Dana/QRIS</p>
-<a class="btn" href="https://wa.me/6283899722403?text=Halo%20DHO%20STORE%20mau%20topup">ORDER VIA WHATSAPP</a>
+<a id="topWa" class="btn-wa" href="#">ORDER VIA WHATSAPP</a>
 </div>
-<div class="grid">
-<div class="card">MLBB</div>
-<div class="card">FREE FIRE</div>
-<div class="card">PUBG M</div>
-<div class="card">GENSHIN</div>
+<div class="games">
+<div class="game-card" onclick="selectGame('MLBB',this)"><h3>MLBB</h3></div>
+<div class="game-card" onclick="selectGame('FREE FIRE',this)"><h3>FREE FIRE</h3></div>
+<div class="game-card" onclick="selectGame('PUBG M',this)"><h3>PUBG M</h3></div>
+<div class="game-card" onclick="selectGame('GENSHIN',this)"><h3>GENSHIN</h3></div>
 </div>
+<div id="orderBox">
+<h2 id="gameTitle" style="font-size:18px;font-weight:900">PILIH NOMINAL</h2>
+<label class="label">ID Game + Server (MLBB: ID SERVER contoh 12345678 1234)</label>
+<input id="userId" type="text" placeholder="Contoh: 123456789">
+<label class="label">Pilih Nominal</label>
+<div id="productList" class="products"></div>
+<label class="label">Pembayaran</label>
+<select id="payment"><option>DANA</option><option>QRIS</option><option>GOPAY</option><option>OVO</option></select>
+<button class="btn-order" onclick="checkout()">ORDER SEKARANG - WA ADMIN</button>
+</div>
+</div>
+<script>
+const WA_NUMBER = "6282161939130";
+const products = {
+"MLBB":[{n:"86 Diamond",h:"Rp 20.000"},{n:"172 Diamond",h:"Rp 40.000"},{n:"257 Diamond",h:"Rp 59.000"},{n:"344 Diamond",h:"Rp 79.000"},{n:"514 Diamond",h:"Rp 118.000"},{n:"706 Diamond",h:"Rp 158.000"}],
+"FREE FIRE":[{n:"70 Diamond",h:"Rp 10.000"},{n:"140 Diamond",h:"Rp 19.000"},{n:"355 Diamond",h:"Rp 47.000"},{n:"720 Diamond",h:"Rp 93.000"}],
+"PUBG M":[{n:"60 UC",h:"Rp 14.000"},{n:"325 UC",h:"Rp 67.000"},{n:"660 UC",h:"Rp 133.000"},{n:"1800 UC",h:"Rp 360.000"}],
+"GENSHIN":[{n:"60 Genesis",h:"Rp 15.000"},{n:"300 Genesis",h:"Rp 70.000"},{n:"980 Genesis",h:"Rp 225.000"}]
+};
+let selectedGame=null;let selectedProd=null;
+function selectGame(game,el){
+selectedGame=game;selectedProd=null;
+document.querySelectorAll('.game-card').forEach(c=>c.classList.remove('active'));
+el.classList.add('active');
+document.getElementById('orderBox').classList.add('show');
+document.getElementById('gameTitle').innerText=game+" - PILIH NOMINAL";
+const list=document.getElementById('productList');list.innerHTML="";
+products[game].forEach(p=>{
+const div=document.createElement('div');div.className='prod';
+div.innerHTML=`<div class="nominal">${p.n}</div><div class="harga">${p.h}</div>`;
+div.onclick=()=>{document.querySelectorAll('.prod').forEach(x=>x.classList.remove('active'));div.classList.add('active');selectedProd=p;};
+list.appendChild(div);
+});
+}
+function checkout(){
+const id=document.getElementById('userId').value;
+const pay=document.getElementById('payment').value;
+if(!selectedGame){alert("Pilih game dulu!");return}
+if(!selectedProd){alert("Pilih nominal dulu!");return}
+if(!id){alert("Isi ID dulu!");return}
+const text=`Halo DHO STORE mau topup%0AGame: ${selectedGame}%0ANominal: ${selectedProd.n} - ${selectedProd.h}%0AID: ${id}%0APembayaran: ${pay}`;
+window.open(`https://wa.me/${WA_NUMBER}?text=${text}`,'_blank');
+}
+</script>
 </body>
 </html>
